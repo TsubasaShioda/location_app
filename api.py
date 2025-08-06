@@ -32,6 +32,19 @@ except FileNotFoundError:
     num_classes = 0
     print(f"Error: Class names file not found at {CLASS_NAMES_PATH}")
 
+# 各クラスの信頼度スコア (混同行列の対角成分から取得)
+# 順序は class_names と一致している必要があります
+confidence_scores = {
+    "Africa": 0.73,
+    "Asia": 0.74,
+    "Europe": 0.81,
+    "Japan": 0.89,
+    "Middle East": 0.46,
+    "North America": 0.86,
+    "Oceania": 0.78,
+    "South America": 0.70,
+}
+
 # モデルのロード
 try:
     # モデルの構造を定義 (DenseNet121を使用)
@@ -80,8 +93,9 @@ def predict():
             outputs = model(image_tensor)
             _, predicted_idx = torch.max(outputs, 1)
             predicted_class = class_names[predicted_idx.item()]
+            confidence = confidence_scores.get(predicted_class, 0.0) # 信頼度を取得
 
-        return jsonify({'prediction': predicted_class})
+        return jsonify({'prediction': predicted_class, 'confidence': confidence})
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
