@@ -8,29 +8,47 @@ from PIL import Image
 app = Flask(__name__)
 CORS(app)
 
-# モデルとクラス名のパス
-MODEL_PATH = 'model.pth'
-CLASS_NAMES_PATH = 'class_names.txt'
+import os
+
+# スクリプト自身のディレクトリを取得
+script_dir = os.path.dirname(os.path.abspath(__file__))
+
+# モデルとクラス名の絶対パスを構築
+MODEL_PATH = os.path.join(script_dir, 'model.pth')
+CLASS_NAMES_PATH = os.path.join(script_dir, 'class_names.txt')
+
+import torchvision.models as models
 
 # デバイスの設定
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
-# モデルのロード
-try:
-    model = torch.load(MODEL_PATH, map_location=device)
-    model.eval()
-except FileNotFoundError:
-    model = None
-    print(f"Error: Model file not found at {MODEL_PATH}")
-
 
 # クラス名のロード
 try:
     with open(CLASS_NAMES_PATH, 'r', encoding='utf-8') as f:
         class_names = [line.strip() for line in f.readlines()]
+    num_classes = len(class_names)
 except FileNotFoundError:
     class_names = None
+    num_classes = 0
     print(f"Error: Class names file not found at {CLASS_NAMES_PATH}")
+
+# モデルのロード
+try:
+    # モデルの構造を定義 (DenseNet121を使用)
+    model = models.densenet121(weights=None) 
+    num_ftrs = model.classifier.in_features
+    model.classifier = torch.nn.Linear(num_ftrs, num_classes) # 出力層をクラス数に合わせる
+
+    # 保存された重みをロード
+    model.load_state_dict(torch.load(MODEL_PATH, map_location=device))
+    model.to(device)
+    model.eval()
+except FileNotFoundError:
+    model = None
+    print(f"Error: Model file not found at {MODEL_PATH}")
+except Exception as e:
+    model = None
+    print(f"Error loading model: {e}")
 
 
 # 画像の前処理
@@ -46,10 +64,10 @@ def predict():
     if model is None or class_names is None:
         return jsonify({'error': 'Model or class names not loaded'}), 500
 
-    if 'file' not in request.files:
+    if 'image' not in request.files:
         return jsonify({'error': 'No file part'}), 400
 
-    file = request.files['file']
+    file = request.files['image']
     if file.filename == '':
         return jsonify({'error': 'No selected file'}), 400
 
@@ -69,4 +87,4 @@ def predict():
         return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=5001, debug=True)
