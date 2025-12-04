@@ -109,4 +109,4 @@ dmypy.json
 .pyre/
 
 # Log files
-*.log
+*.log.DS_Store

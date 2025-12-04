@@ -1,5 +1,17 @@
 import { useState } from 'react';
 
+// 地域名の日本語翻訳データ
+const regionTranslations = {
+  "Africa": "アフリカ",
+  "Asia": "アジア",
+  "Europe": "ヨーロッパ",
+  "Japan": "日本",
+  "Middle East": "中東",
+  "North America": "北アメリカ",
+  "Oceania": "オセアニア",
+  "South America": "南アメリカ",
+};
+
 export default function Home() {
   const [selectedFile, setSelectedFile] = useState(null);
   const [predictionResult, setPredictionResult] = useState(null);
@@ -53,6 +65,23 @@ export default function Home() {
     <div style={styles.container}>
       <h1 style={styles.title}>地域予測アプリ</h1>
       <p style={styles.description}>風景画像をアップロードして、どの地域か予測します。</p>
+
+      {/* アプリケーション説明セクション */}
+      <div style={styles.appDescriptionBox}>
+        <h2 style={styles.appDescriptionTitle}>このアプリについて</h2>
+        <p style={styles.appDescriptionText}>
+          このアプリケーションは、アップロードされた風景画像から、それが世界のどの地域で撮影されたものかを予測します。
+          ユーザーは画像ファイルを選択し、アップロードボタンをクリックするだけで、AIモデルが画像を分析し、最も可能性の高い地域と信頼度を表示します。
+        </p>
+        <div style={styles.appDescriptionText}>
+          予測される地域は以下のいずれかです：
+          <ul>
+            {Object.entries(regionTranslations).map(([english, japanese]) => (
+              <li key={english}>{japanese} ({english})</li>
+            ))}
+          </ul>
+        </div>
+      </div>
 
       <div style={styles.uploadBox}>
         <input
@@ -187,5 +216,25 @@ const styles = {
     fontSize: '0.8em',
     color: '#555',
     marginLeft: '10px',
+  },
+  appDescriptionBox: {
+    backgroundColor: '#e9f7ef',
+    border: '1px solid #d4edda',
+    borderRadius: '8px',
+    padding: '20px',
+    marginBottom: '30px',
+    textAlign: 'left',
+  },
+  appDescriptionTitle: {
+    color: '#28a745',
+    fontSize: '1.6em',
+    marginBottom: '10px',
+    borderBottom: '2px solid #28a745',
+    paddingBottom: '5px',
+  },
+  appDescriptionText: {
+    color: '#333',
+    fontSize: '1em',
+    lineHeight: '1.6',
   },
 };
